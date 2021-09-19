@@ -13,10 +13,16 @@
 			+ Informacion actual de cada turno
 		+ Recibir nombres
 		- Verificar si alguno logro 3 en linea o empate
-			- Informar situación final
-				- Gano X o O
-				- Empate
+			+ Informar situación final
+				+ Gano X o O
+				* Empate
+			+ Verificar a partir del 5 turno inclusive
+			-En caso de empate
+				* deberia terminar
+				*(extra) deberia comenzar otra ronda
+				*(extra) deberia definirse al ganador con un juego de piedra papel o tijera
 		+ Comienza inicialmente X o O
+		- Informar errpres
 		+ Crear un bot como segundo jugador (el jugador 1 es el usuario)
 */
 
@@ -35,6 +41,8 @@
 #define MAX_FILA 3
 #define MAX_COLUM 3
 #define MAX_TURNOS MAX_FILA*MAX_COLUM
+const int TURNO_EMEPZAR_VERIF = 4;
+const int MAX_VERIF_DIAG = 2;
 
 const int FILA_DEF = -1;
 const int COL_DEF = -1;
@@ -46,6 +54,13 @@ const char SIMB_JUGADOR_INICIAL_DEF = SIMB_JUGADOR_A;
 
 const int MOVIMIENTO_INVALIDO = 0;
 const int MOVIMIENTO_VALIDO = 1;
+
+const int NO_GANO = 0;
+const int SI_GANO = 1;
+
+#define SIN_ERROR 0
+#define ERROR_TAMANIO 1
+#define ERROR_CASILLA_OCUPADA 2
 
 /*
 	Descripcion: recibe los nombres de los jugadores
@@ -103,14 +118,48 @@ void recibirMovimientoUsuario(int *fila, int *col){
 
 /*
 	Descripcion: recibimos el movimiento del bot
-	Pre: 
-	Post: 
+	Pre: "fila" y "col" correctamente definidos y asignados
+	Post: se generan posiciones aleatorias para "fila" y "col"
 */
 void recibirMovimientoBot(int *fila, int *col){
 	//generar un numero aleatorio para fila y columna
 	//rand()
 	*fila = rand() % MAX_FILA; // numero aleatorio entre 0 y 2
 	*col = rand() % MAX_COLUM;
+}
+
+/*
+	Descripcion: informa el error detectado
+	Pre: "tipoError" correctamente definido y actualizado
+	Post: informa el "tipoError" detectado mediante consola 
+*/
+void informarError(int tipoError){
+	printf("\nError: ");
+	switch(tipoError){
+		case ERROR_TAMANIO:
+			printf("Posicion invalida, valores de 0 a 2\n\n");
+			break;
+		case ERROR_CASILLA_OCUPADA:
+			printf("Casilla ocupada\n\n");
+	}
+}
+
+/*
+	Descripcion: verifica la casilla del movimiento a ingresar
+	Pre: "tablero", "tipoError", fila y col correctamente definidos y actualizados
+	Post: devuelve "MOVIMIENTO_INVALIDO" si la casiila esta ocupada, caso controario devuelve "MOVIMIENTO_VALIDO"
+		  actualiza "tipoError" con error:"ERROR_CASILLA_OCUPADA" si se dqetecta error
+*/
+int verificarCasillaOcupada(char tablero[MAX_FILA][MAX_COLUM], int *tipoError, int fila, int col){
+	int validacionMovimiento = MOVIMIENTO_INVALIDO;
+	
+	if(!tablero[fila][col]){ //verifico si esta libre el lugar, si es "0" entra al if
+		validacionMovimiento = MOVIMIENTO_VALIDO;
+	}else{
+		*tipoError = ERROR_CASILLA_OCUPADA;
+	}	
+	
+	return validacionMovimiento;
 }
 
 /*
@@ -122,19 +171,23 @@ void recibirMovimientoBot(int *fila, int *col){
 		 "tablero" correctamente defido y actualizado
 	Post: Verifica si el movimiento es valido, si lo es devuelvo el valor de "MOVIMIENTO_VALIDO", caso contrario devuelvo "MOVIMIENTO_INVALIDO"
 */
-int verificarMovimiento(int *fila, int *col, char tablero[MAX_FILA][MAX_COLUM]){
+int verificarMovimiento(int fila, int col, char tablero[MAX_FILA][MAX_COLUM]){
 	int validacionMovimiento = MOVIMIENTO_INVALIDO;
-	if((*fila >= 0 && *fila < MAX_FILA) && (*col >= 0 && *col < MAX_COLUM)){  //verifico que esta dentro de la matriz
-		if(tablero[*fila][*col] == 0){ //verifico si esta libre el lugar
-			validacionMovimiento = MOVIMIENTO_VALIDO;
-		}
+	int tipoError = SIN_ERROR;
+	if((fila >= 0 && fila < MAX_FILA) && (col >= 0 && col < MAX_COLUM)){  //verifico que esta dentro de la matriz
+		validacionMovimiento = verificarCasillaOcupada(tablero, &tipoError, fila, col);							   
+	}else{
+		tipoError = ERROR_TAMANIO;
+	}
+	if(tipoError){
+		informarError(tipoError);
 	}
 	return validacionMovimiento;
 }
 
 /*
 	Descripcion: solicitamos el movimiento del jugador actual
-	Pre: "fila" y "col" punteros correctamente asignados
+	Pre: "simbActual" y "tablero" punteros correctamente asignados
 	Post: solicita y asigna el movimiento del jugado en "fila" y "col"
 */
 void recibirMovimiento(int *fila, int *col, char simbActual, char tablero[MAX_FILA][MAX_COLUM]){
@@ -144,8 +197,8 @@ void recibirMovimiento(int *fila, int *col, char simbActual, char tablero[MAX_FI
 		}else{
 			recibirMovimientoBot(fila, col);
 		}
-	}while( !verificarMovimiento(fila, col, tablero) );	
-}
+	}while( !verificarMovimiento(*fila, *col, tablero) );//podria decirse que cancelamos el pasaje por referencia	
+}														 // y usamos un pasaje por valor
 
 /*
 	Descripcion: cambia de simbolo al correspondiente del siguiente jugador
@@ -163,11 +216,11 @@ void alternarTurnos(char *simbActual){
 
 /*
 	Descripcion: muestra la informacion del turno
-	Pre: "turnosActual" y "simbActual" correctamente asignados
+	Pre: "turnoActual" y "simbActual" correctamente asignados
 	Post: muestra mediante consola la informacion del turno actual
 */
-void mostrarInfoTurno(int turnosActual, char simbActual, char nombreJugadorActual[MAX_NOMBRE]){
-	printf("\n  Turno numero: %i\n", turnosActual+1);
+void mostrarInfoTurno(int turnoActual, char simbActual, char nombreJugadorActual[MAX_NOMBRE]){
+	printf("\n  Turno numero: %i\n", turnoActual+1);
 	printf("  Jugador actual: %s [%c]\n\n",nombreJugadorActual, simbActual);
 	
 	
@@ -187,42 +240,143 @@ void selecNombreJugadorAct(char nombreJugadorActual[MAX_NOMBRE], char nombreJuga
 }
 
 /*
+	Descripcion: verifica el 3 en lina horizontal
+	Pre: "tablero" y "simbActual" correctamente definidos y actualizados
+	Post: devolver "SI_GANO" si se logro un 3 en linea horizontal, caso contrario devuelve "NO_GANO"
+*/
+int verificacionHorizontal(char tablero[MAX_FILA][MAX_COLUM], char simbActual){
+	int estadoGano = NO_GANO;
+	for(int verfHor = 0; verfHor < MAX_FILA; verfHor++){
+		printf("verifif hor\n");
+		if(tablero[verfHor][0] == simbActual && tablero[verfHor][1] == simbActual && tablero[verfHor][2] == simbActual){
+			estadoGano = SI_GANO;
+			verfHor = MAX_FILA;
+		}
+	}
+	return estadoGano;
+}
+
+/*
+	Descripcion: verifica el 3 en lina vertical
+	Pre: "tablero" y "simbActual" correctamente definidos y actualizados
+	Post: devolver "SI_GANO" si se logro un 3 en linea vertical, caso contrario devuelve "NO_GANO"
+*/
+int verirficacionVertical(char tablero[MAX_FILA][MAX_COLUM], char simbActual){
+	int estadoGano = NO_GANO;
+	for(int verfVert = 0; verfVert < MAX_COLUM; verfVert++){
+			printf("verif vert\n");
+			if(tablero[0][verfVert] == simbActual && tablero[1][verfVert] == simbActual && tablero[2][verfVert] == simbActual){
+				estadoGano = SI_GANO;
+				verfVert = MAX_COLUM;
+			}
+		}
+	return estadoGano;
+}
+
+/*
+	Descripcion: verifica el 3 en lina diagonal
+	Pre: "tablero" y "simbActual" correctamente definidos y actualizados
+	Post: devolver "SI_GANO" si se logro un 3 en linea diagonal, caso contrario devuelve "NO_GANO"
+*/
+int verificacionDiagonal(char tablero[MAX_FILA][MAX_COLUM], char simbActual){
+	int estadoGano = NO_GANO;
+	for(int verfDiag = 0; verfDiag <= MAX_VERIF_DIAG; verfDiag+=2){//verfDiag = verfDiag +2;
+			printf("verif diag\n");
+			if(tablero[verfDiag][0] == simbActual && tablero[1][1] == simbActual && tablero[2-verfDiag][2] == simbActual){
+				estadoGano = SI_GANO;
+				verfDiag = MAX_VERIF_DIAG;
+			}
+		}
+	return estadoGano;
+}
+
+/*
+	Descripcion: verifica si algun jugador gano/realizo 3 en linea
+	Pre: "tablero" y "simbActual" correctamente definidos y actualizados
+		 "estadoGanoJuego" correctamente definido apunta a la varaiable que contiene el estado del juego
+	Post: devuelve "SI_GANO" si se logra verificar un 3 en linea, caso contrario devuelve "NO_GANO"
+		  actualiza "estadoGanoJuego" con el valor de "estadoGano"
+	*/
+int verificarGanoJugador(char tablero[MAX_FILA][MAX_COLUM], char simbActual, int *estadoGanoJuego){
+	int estadoGano = NO_GANO;
+	estadoGano = verificacionHorizontal(tablero, simbActual);
+	if (!estadoGano){
+		estadoGano = verirficacionVertical(tablero, simbActual);
+	}
+	if(!estadoGano){
+		estadoGano = verificacionDiagonal(tablero, simbActual);
+	}
+
+	*estadoGanoJuego = estadoGano;
+
+	return estadoGano;
+}
+
+/*
+	Descripcion: informa la situacion final del juegi
+	Pre: "nombreJugadorActual", "tablero" y "estadoGanoJuego" correctamente definidos y actualizados
+	Post: informar la situacion final del juego
+*/
+void informarSituacionFinal(char nombreJugadorActual[MAX_NOMBRE], char tablero[MAX_FILA][MAX_COLUM], int estadoGanoJuego){
+	if (estadoGanoJuego){
+		printf("\nJugador %s GANO!! :D\n\n", nombreJugadorActual);
+	}else{
+		printf("\nEMPATE!! :(\n\n");
+	}
+	mostrarTablero(tablero);
+	printf("\nGracias por jugar, vuelva prontos!!\n");
+}
+
+/*
+	Descripcion: evaluamos la situacion del turno
+	Pre: "turnoActual", "tablero", "simbActual", "estadoGanoJuego" correctamente definidos y actualizados
+	Post: dependiendo de la situacion del turno actual:
+		- alternar los turnos
+		- verifica si algun jugador gano
+		- actualiza el "turnoActual" si algun jugador gano
+*/
+void evaluarSituacionTurno(int *turnoActual, char tablero[MAX_FILA][MAX_COLUM], char *simbActual, int *estadoGanoJuego){
+	if(*turnoActual >= TURNO_EMEPZAR_VERIF && verificarGanoJugador(tablero, *simbActual, estadoGanoJuego)){	
+		*turnoActual = MAX_TURNOS;
+	}else{
+		alternarTurnos(simbActual);
+	}
+}
+
+/*
 	Descripcion: inicia el juego hasta que se obtiene un final
+	Pre: tablero, nombreJugadorA, nombreJugadorB correctamente definidos y actualizado
+	Post: iniciamos el juego implementando los requisitos establecidos
 */
 void iniciarJuego(char tablero[MAX_FILA][MAX_COLUM], char nombreJugadorA[MAX_NOMBRE], char nombreJugadorB[MAX_NOMBRE]){ //tablero es un parametro
 	char simbActual = SIMB_JUGADOR_INICIAL_DEF;
 	int fila = FILA_DEF;
 	int col = COL_DEF;
 	char nombreJugadorActual[MAX_NOMBRE] = NOMBRE_DEF_JUG_ACT;
-
-	for (int turnosActual = 0; turnosActual < MAX_TURNOS; turnosActual++){
+	int estadoGanoJuego = NO_GANO;
+	
+	for (int turnoActual = 0; turnoActual < MAX_TURNOS; turnoActual++){
 		selecNombreJugadorAct(nombreJugadorActual, nombreJugadorA, nombreJugadorB, simbActual);
-		mostrarInfoTurno(turnosActual, simbActual, nombreJugadorActual);
-		
+		mostrarInfoTurno(turnoActual, simbActual, nombreJugadorActual);
 		mostrarTablero(tablero);
 		recibirMovimiento(&fila, &col, simbActual, tablero);
 		tablero[fila][col] = simbActual;//agrego el movimiento al tablero
-		//verificar estado si gano o empate
-		//verificaciones
-			//movimiento realizado
-		//implementar el bot
-		alternarTurnos(&simbActual);
+		//verificar estado si gano o empate 
+		evaluarSituacionTurno(&turnoActual, tablero, &simbActual, &estadoGanoJuego);
 	}
+	informarSituacionFinal(nombreJugadorActual, tablero, estadoGanoJuego);
 }
 
 int main(){
 
 	srand(time(NULL));//alteramos la semilla para que el numero aleatorio sea mas aleatorio
 
-	char tablero[MAX_FILA][MAX_COLUM] = {};
+	char tablero[MAX_FILA][MAX_COLUM] = {};						//
+	char nombreJugadorA[MAX_NOMBRE] = NOMBRE_DEF_JUG_A; 		//
+	char nombreJugadorB[MAX_NOMBRE] = NOMBRE_DEF_JUG_B; 		//crear un modulo "configuracionInicialJuego"
+	recibirNombresJugadores(nombreJugadorA, nombreJugadorB); 	//
+	presentarJuego(nombreJugadorA, nombreJugadorB);				//
 	
-	//nombre de jugadores
-	char nombreJugadorA[MAX_NOMBRE] = NOMBRE_DEF_JUG_A; 
-	char nombreJugadorB[MAX_NOMBRE] = NOMBRE_DEF_JUG_B; 
-
-	recibirNombresJugadores(nombreJugadorA, nombreJugadorB); 
-	presentarJuego(nombreJugadorA, nombreJugadorB);
-	//tablero
 	iniciarJuego(tablero, nombreJugadorA, nombreJugadorB); //tablero se envia como argumento
 
 	return 0;
