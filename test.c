@@ -12,18 +12,29 @@
 			+ Diferenciar Jugadores
 			+ Informacion actual de cada turno
 		+ Recibir nombres
-		- Verificar si alguno logro 3 en linea o empate
+			+ Un jugador y el bot
+			+ Dos jugadores
+		+ Verificar si alguno logro 3 en linea o empate
 			+ Informar situación final
 				+ Gano X o O
-				* Empate
+				+ Empate
 			+ Verificar a partir del 5 turno inclusive
 			-En caso de empate
-				* deberia terminar
+				+ deberia terminar
 				*(extra) deberia comenzar otra ronda
+					- con los mismos nombres??
 				*(extra) deberia definirse al ganador con un juego de piedra papel o tijera
 		+ Comienza inicialmente X o O
-		- Informar errpres
+		+ Informar errores
 		+ Crear un bot como segundo jugador (el jugador 1 es el usuario)
+		+ Permitir jugar entre 2 personas
+		- Reemplazar el ingresar fila y col por posiciones en el pad numerico
+*/
+
+/*
+	Consultas
+		- posibilidad de optimizar funcion "recibirNombresJugadores"
+		- implementar el reemplazo de ingresar fila y col con un switch? cada case deberia tener dentro la posicion de la matriz. Ej Num 7 = tablero[0][0]
 */
 
 //nombre del juego
