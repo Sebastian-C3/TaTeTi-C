@@ -110,7 +110,6 @@ void recibirNombreJugadorB(char nombreJugadorB[MAX_NOMBRE]){
 	scanf(" %s", nombreJugadorB);
 }
 
-
 /*
 	Descripcion: recibe los nombres de los jugadores
 	Pre: "nombreJugadorA", "nombreJugadorB" y "cantJugadores" correctamente definidos y asignados
@@ -122,12 +121,10 @@ void recibirNombresJugadores(char nombreJugadorA[MAX_NOMBRE], char nombreJugador
 		recibirNombreJugadorA(nombreJugadorA);
 		strcpy(nombreJugadorB, NOMBRE_BOT_JUGADOR);	//asigna el nombre al bot
 	}
-
 	if(cantJugadores == CANT_JUGADORES_DOS){
 		recibirNombreJugadorA(nombreJugadorA);
 		recibirNombreJugadorB(nombreJugadorB);
 	}
-	
 	printf("nombres asignados...\n");
 }
 
@@ -290,7 +287,6 @@ void selecNombreJugadorAct(char nombreJugadorActual[MAX_NOMBRE], char nombreJuga
 	}else{
 		strcpy(nombreJugadorActual, nombreJugadorB);
 	}
-
 }
 
 /*
@@ -360,7 +356,6 @@ int verificarGanoJugador(char tablero[MAX_FILA][MAX_COLUM], char simbActual, int
 	if(!estadoGano){
 		estadoGano = verificacionDiagonal(tablero, simbActual);
 	}
-
 	*estadoGanoJuego = estadoGano;
 
 	return estadoGano;
@@ -421,7 +416,6 @@ void iniciarJuego(char tablero[MAX_FILA][MAX_COLUM], char nombreJugadorA[MAX_NOM
 	informarSituacionFinal(nombreJugadorActual, tablero, estadoGanoJuego);
 }
 
-
 /*
 	Descripcion: se realiza la "configInicialJuego" y se presenta el juego
 	Pre: se generan las variables "nombreJugadorA", "nombreJugadorB" y "tablero"
@@ -447,6 +441,6 @@ int main(){
 
 	srand(time(NULL));//alteramos la semilla para que el numero aleatorio sea mas aleatorio
 	configInicialJuego();
-	
+
 	return 0;
 }
