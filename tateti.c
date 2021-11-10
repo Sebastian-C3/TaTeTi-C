@@ -26,7 +26,6 @@
 		+ Crear un bot como segundo jugador (el jugador 1 es el usuario)
 */
 
-//nombre del juego
 #define NOMBRE_JUEGO "Ta Te Ti"
 
 #define MAX_NOMBRE 100
@@ -35,7 +34,6 @@
 #define NOMBRE_DEF_JUG_B "def nombre B"
 #define NOMBRE_DEF_JUG_ACT "def nombre jugador actual"
 
-/*Lo ideal seria utilizar lectura de archivos*/
 #define INFO_INICIAL_JUEGO "Info del Juego:\n\tJuego entre dos jugadores: X y O, que marcan los espacios de un tablero de 9 casillas alternadamente.\n\tCada jugador solo debe colocar su simbolo una vez por turno y no debe ser sobre una casilla ya jugada.\n\tSe debe conseguir realizar una linea recta o diagonal por simbolo.\n\n"
 
 #define MAX_FILA 3
@@ -82,7 +80,6 @@ void recibirNombresJugadores(char nombreJugadorA[MAX_NOMBRE], char nombreJugador
 */
 void presentarJuego(char nombreJugadorA[MAX_NOMBRE], char nombreJugadorB[MAX_NOMBRE]){
 	printf("\n\t\t*** %s ***\n\n", NOMBRE_JUEGO);
-	//info del juego - INFO_INICIAL_JUEGO (recomendado que lo levante de un archivo)
 	printf("%s\n", INFO_INICIAL_JUEGO);
 	printf("Nombre de juagador A: %s\n", nombreJugadorA);
 	printf("Nombre de juagador B: %s\n\n", nombreJugadorB);
@@ -122,9 +119,7 @@ void recibirMovimientoUsuario(int *fila, int *col){
 	Post: se generan posiciones aleatorias para "fila" y "col"
 */
 void recibirMovimientoBot(int *fila, int *col){
-	//generar un numero aleatorio para fila y columna
-	//rand()
-	*fila = rand() % MAX_FILA; // numero aleatorio entre 0 y 2
+	*fila = rand() % MAX_FILA; 
 	*col = rand() % MAX_COLUM;
 }
 
@@ -153,7 +148,7 @@ void informarError(int tipoError){
 int verificarCasillaOcupada(char tablero[MAX_FILA][MAX_COLUM], int *tipoError, int fila, int col){
 	int validacionMovimiento = MOVIMIENTO_INVALIDO;
 	
-	if(!tablero[fila][col]){ //verifico si esta libre el lugar, si es "0" entra al if
+	if(!tablero[fila][col]){ 
 		validacionMovimiento = MOVIMIENTO_VALIDO;
 	}else{
 		*tipoError = ERROR_CASILLA_OCUPADA;
@@ -174,7 +169,7 @@ int verificarCasillaOcupada(char tablero[MAX_FILA][MAX_COLUM], int *tipoError, i
 int verificarMovimiento(int fila, int col, char tablero[MAX_FILA][MAX_COLUM]){
 	int validacionMovimiento = MOVIMIENTO_INVALIDO;
 	int tipoError = SIN_ERROR;
-	if((fila >= 0 && fila < MAX_FILA) && (col >= 0 && col < MAX_COLUM)){  //verifico que esta dentro de la matriz
+	if((fila >= 0 && fila < MAX_FILA) && (col >= 0 && col < MAX_COLUM)){ 
 		validacionMovimiento = verificarCasillaOcupada(tablero, &tipoError, fila, col);							   
 	}else{
 		tipoError = ERROR_TAMANIO;
@@ -193,12 +188,12 @@ int verificarMovimiento(int fila, int col, char tablero[MAX_FILA][MAX_COLUM]){
 void recibirMovimiento(int *fila, int *col, char simbActual, char tablero[MAX_FILA][MAX_COLUM]){
 	do{	
 		if (simbActual == SIMB_JUGADOR_A){
-			recibirMovimientoUsuario(fila, col);//no se usa el & porq fila y col ya tienen la direccion de memoria
+			recibirMovimientoUsuario(fila, col);
 		}else{
 			recibirMovimientoBot(fila, col);
 		}
-	}while( !verificarMovimiento(*fila, *col, tablero) );//podria decirse que cancelamos el pasaje por referencia	
-}														 // y usamos un pasaje por valor
+	}while( !verificarMovimiento(*fila, *col, tablero) );	
+}														 
 
 /*
 	Descripcion: cambia de simbolo al correspondiente del siguiente jugador
@@ -232,7 +227,7 @@ void mostrarInfoTurno(int turnoActual, char simbActual, char nombreJugadorActual
 */
 void selecNombreJugadorAct(char nombreJugadorActual[MAX_NOMBRE], char nombreJugadorA[MAX_NOMBRE], char nombreJugadorB[MAX_NOMBRE], char simbActual){
 	if (simbActual == SIMB_JUGADOR_A){
-		strcpy(nombreJugadorActual, nombreJugadorA); //nombreJugadorActual = nombreJugadorA;
+		strcpy(nombreJugadorActual, nombreJugadorA); 
 	}else{
 		strcpy(nombreJugadorActual, nombreJugadorB);
 	}
@@ -280,7 +275,7 @@ int verirficacionVertical(char tablero[MAX_FILA][MAX_COLUM], char simbActual){
 */
 int verificacionDiagonal(char tablero[MAX_FILA][MAX_COLUM], char simbActual){
 	int estadoGano = NO_GANO;
-	for(int verfDiag = 0; verfDiag <= MAX_VERIF_DIAG; verfDiag+=2){//verfDiag = verfDiag +2;
+	for(int verfDiag = 0; verfDiag <= MAX_VERIF_DIAG; verfDiag+=2){
 			printf("verif diag\n");
 			if(tablero[verfDiag][0] == simbActual && tablero[1][1] == simbActual && tablero[2-verfDiag][2] == simbActual){
 				estadoGano = SI_GANO;
@@ -348,7 +343,7 @@ void evaluarSituacionTurno(int *turnoActual, char tablero[MAX_FILA][MAX_COLUM], 
 	Pre: tablero, nombreJugadorA, nombreJugadorB correctamente definidos y actualizado
 	Post: iniciamos el juego implementando los requisitos establecidos
 */
-void iniciarJuego(char tablero[MAX_FILA][MAX_COLUM], char nombreJugadorA[MAX_NOMBRE], char nombreJugadorB[MAX_NOMBRE]){ //tablero es un parametro
+void iniciarJuego(char tablero[MAX_FILA][MAX_COLUM], char nombreJugadorA[MAX_NOMBRE], char nombreJugadorB[MAX_NOMBRE]){ 
 	char simbActual = SIMB_JUGADOR_INICIAL_DEF;
 	int fila = FILA_DEF;
 	int col = COL_DEF;
@@ -371,13 +366,13 @@ int main(){
 
 	srand(time(NULL));//alteramos la semilla para que el numero aleatorio sea mas aleatorio
 
-	char tablero[MAX_FILA][MAX_COLUM] = {};						//
-	char nombreJugadorA[MAX_NOMBRE] = NOMBRE_DEF_JUG_A; 		//
-	char nombreJugadorB[MAX_NOMBRE] = NOMBRE_DEF_JUG_B; 		//crear un modulo "configuracionInicialJuego"
-	recibirNombresJugadores(nombreJugadorA, nombreJugadorB); 	//
-	presentarJuego(nombreJugadorA, nombreJugadorB);				//
+	char tablero[MAX_FILA][MAX_COLUM] = {};				
+	char nombreJugadorA[MAX_NOMBRE] = NOMBRE_DEF_JUG_A; 		
+	char nombreJugadorB[MAX_NOMBRE] = NOMBRE_DEF_JUG_B; 		
+	recibirNombresJugadores(nombreJugadorA, nombreJugadorB); 	
+	presentarJuego(nombreJugadorA, nombreJugadorB);				
 	
-	iniciarJuego(tablero, nombreJugadorA, nombreJugadorB); //tablero se envia como argumento
+	iniciarJuego(tablero, nombreJugadorA, nombreJugadorB); 
 
 	return 0;
 }
